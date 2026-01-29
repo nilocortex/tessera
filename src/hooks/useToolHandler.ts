@@ -6,9 +6,19 @@ import { useToolStore } from '../stores/toolStore';
 import { useTilesetStore } from '../stores/tilesetStore';
 import { useMapStore } from '../stores/mapStore';
 import { useHistoryStore } from '../stores/historyStore';
+import { useSelectionStore } from '../stores/selectionStore';
 import { getBrushPositions, getLinePositions } from '../tools/brush';
 import { floodFill } from '../tools/floodFill';
-import type { Position, HistoryActionType } from '../types';
+import type { Position, HistoryActionType, Bounds } from '../types';
+
+function isPointInBounds(point: Position, bounds: Bounds): boolean {
+  return (
+    point.x >= bounds.x &&
+    point.x < bounds.x + bounds.width &&
+    point.y >= bounds.y &&
+    point.y < bounds.y + bounds.height
+  );
+}
 
 export function useToolHandler() {
   const activeTool = useToolStore((s) => s.activeTool);
@@ -16,11 +26,27 @@ export function useToolHandler() {
   const getSelectedGlobalTileId = useTilesetStore((s) => s.getSelectedGlobalTileId);
   const { map, setTileRaw, getTile } = useMapStore();
   const { recordChange, commitPending, pushAction } = useHistoryStore();
+  
+  // Selection store
+  const {
+    startDrag,
+    updateDrag,
+    endDrag,
+    selection,
+    moveSelection,
+    commitSelection,
+    getSelectionBounds,
+    isDragging: selectionIsDragging,
+  } = useSelectionStore();
 
   // Track painted tiles during current stroke
   const paintedThisStroke = useRef<Set<string>>(new Set());
   const lastPosition = useRef<Position | null>(null);
   const isDrawing = useRef(false);
+  
+  // Track selection drag start for moving floating selections
+  const selectionDragStart = useRef<Position | null>(null);
+  const isMovingSelection = useRef(false);
 
   const currentLayerId = 'default'; // Will be dynamic with layer system
 
@@ -66,6 +92,50 @@ export function useToolHandler() {
       if (!map) return;
 
       switch (activeTool) {
+        case 'select': {
+          // Check if clicking on existing floating selection
+          if (selection?.floating) {
+            const bounds = getSelectionBounds();
+            if (bounds && isPointInBounds(tilePos, bounds)) {
+              // Start moving the selection
+              selectionDragStart.current = tilePos;
+              isMovingSelection.current = true;
+              return;
+            } else {
+              // Clicked outside - commit floating selection and start new selection
+              // Record commit for undo
+              const { bounds, tiles, layerId, offsetX, offsetY } = selection;
+              const targetX = bounds.x + offsetX;
+              const targetY = bounds.y + offsetY;
+              const changes = [];
+
+              for (let dy = 0; dy < bounds.height; dy++) {
+                for (let dx = 0; dx < bounds.width; dx++) {
+                  const newTileId = tiles[dy * bounds.width + dx];
+                  if (newTileId !== 0) {
+                    const x = targetX + dx;
+                    const y = targetY + dy;
+                    const oldTileId = getTile(x, y);
+                    if (oldTileId !== newTileId) {
+                      changes.push({ x, y, layerId, oldTileId, newTileId });
+                    }
+                  }
+                }
+              }
+
+              commitSelection(setTileRaw);
+
+              if (changes.length > 0) {
+                pushAction({ type: 'paste', changes });
+              }
+            }
+          }
+          
+          // Start new selection drag
+          startDrag(tilePos.x, tilePos.y);
+          break;
+        }
+
         case 'brush': {
           paintedThisStroke.current.clear();
           isDrawing.current = true;
@@ -112,7 +182,7 @@ export function useToolHandler() {
           break;
       }
     },
-    [map, activeTool, applyBrush, getSelectedGlobalTileId, getTile, setTileRaw, pushAction, currentLayerId]
+    [map, activeTool, applyBrush, getSelectedGlobalTileId, getTile, setTileRaw, pushAction, currentLayerId, selection, startDrag, commitSelection, getSelectionBounds]
   );
 
   /**
@@ -120,7 +190,27 @@ export function useToolHandler() {
    */
   const onPointerMove = useCallback(
     (tilePos: Position) => {
-      if (!isDrawing.current || !lastPosition.current || !map) return;
+      if (!map) return;
+
+      // Handle selection tool
+      if (activeTool === 'select') {
+        const { isDragging: selDragging, selection: sel } = useSelectionStore.getState();
+        
+        if (selDragging) {
+          updateDrag(tilePos.x, tilePos.y);
+        } else if (sel?.floating && isMovingSelection.current && selectionDragStart.current) {
+          // Move floating selection
+          const dx = tilePos.x - selectionDragStart.current.x;
+          const dy = tilePos.y - selectionDragStart.current.y;
+          if (dx !== 0 || dy !== 0) {
+            moveSelection(dx, dy);
+            selectionDragStart.current = tilePos;
+          }
+        }
+        return;
+      }
+
+      if (!isDrawing.current || !lastPosition.current) return;
 
       if (activeTool === 'brush' || activeTool === 'eraser') {
         const tileId = activeTool === 'brush' ? getSelectedGlobalTileId() : 0;
@@ -141,20 +231,31 @@ export function useToolHandler() {
         lastPosition.current = tilePos;
       }
     },
-    [map, activeTool, getSelectedGlobalTileId, applyBrush]
+    [map, activeTool, getSelectedGlobalTileId, applyBrush, updateDrag, moveSelection]
   );
 
   /**
    * Handle pointer up event
    */
   const onPointerUp = useCallback(() => {
+    // Handle selection tool
+    if (activeTool === 'select') {
+      const { isDragging: selDragging } = useSelectionStore.getState();
+      if (selDragging) {
+        endDrag(getTile, currentLayerId);
+      }
+      selectionDragStart.current = null;
+      isMovingSelection.current = false;
+      return;
+    }
+
     if (isDrawing.current) {
       commitPending();
       isDrawing.current = false;
       lastPosition.current = null;
       paintedThisStroke.current.clear();
     }
-  }, [commitPending]);
+  }, [commitPending, activeTool, endDrag, getTile, currentLayerId]);
 
   return {
     onPointerDown,
