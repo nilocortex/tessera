@@ -18,10 +18,12 @@ interface MapActions {
   createMap: (width: number, height: number, tileSize?: number) => void;
   /** Clear the current map */
   clearMap: () => void;
-  /** Set a tile at the given coordinates */
-  setTile: (x: number, y: number, tileId: number) => void;
+  /** Set a tile at the given coordinates (triggers history recording externally) */
+  setTile: (x: number, y: number, tileId: number, layerId?: string) => void;
+  /** Set a tile without recording history (used by undo/redo) */
+  setTileRaw: (x: number, y: number, tileId: number, layerId?: string) => void;
   /** Get the tile ID at the given coordinates (returns 0 if out of bounds) */
-  getTile: (x: number, y: number) => number;
+  getTile: (x: number, y: number, layerId?: string) => number;
 }
 
 type MapStore = MapState & MapActions;
@@ -51,7 +53,7 @@ export const useMapStore = create<MapStore>()(
       });
     },
 
-    setTile: (x: number, y: number, tileId: number) => {
+    setTile: (x: number, y: number, tileId: number, _layerId = 'default') => {
       set((state) => {
         if (!state.map) return;
         if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) return;
@@ -62,7 +64,19 @@ export const useMapStore = create<MapStore>()(
       });
     },
 
-    getTile: (x: number, y: number) => {
+    setTileRaw: (x: number, y: number, tileId: number, _layerId = 'default') => {
+      // Same as setTile but semantically for undo/redo (bypasses external history recording)
+      // For now, single layer - will be updated in Layer plan
+      set((state) => {
+        if (!state.map) return;
+        if (x < 0 || x >= state.map.width || y < 0 || y >= state.map.height) return;
+        
+        const index = y * state.map.width + x;
+        state.map.tiles[index] = Math.max(0, Math.min(65535, tileId));
+      });
+    },
+
+    getTile: (x: number, y: number, _layerId = 'default') => {
       const { map } = get();
       if (!map) return 0;
       if (x < 0 || x >= map.width || y < 0 || y >= map.height) return 0;
