@@ -51,6 +51,8 @@ export interface TileMap {
   activeLayerId: string;
   /** Map metadata */
   metadata: MapMetadata;
+  /** Version counter for change detection (incremented on every tile change) */
+  version: number;
 }
 
 /** Anchor positions for map resize operations */

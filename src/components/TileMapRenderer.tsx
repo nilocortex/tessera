@@ -237,7 +237,7 @@ export function TileMapRenderer({ viewport }: TileMapRendererProps) {
       }
       spritePoolsRef.current.clear();
     };
-  }, [viewport, map, showGrid, hasTilesets, resolveGlobalTileId, tilesets]);
+  }, [viewport, map, map?.version, showGrid, hasTilesets, resolveGlobalTileId, tilesets]);
 
   // This component doesn't render React elements
   // It manages PixiJS objects imperatively

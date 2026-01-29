@@ -135,6 +135,7 @@ export const useMapStore = create<MapStore>()(
             modifiedAt: now,
             customProperties: {},
           },
+          version: 0,
         };
       });
     },
@@ -249,6 +250,7 @@ export const useMapStore = create<MapStore>()(
         const targetLayer = state.map!.layers.find((l) => l.id === targetLayerId)!;
         const index = y * state.map!.width + x;
         targetLayer.tiles[index] = Math.max(0, Math.min(65535, tileId));
+        state.map!.version++; // Trigger re-render
       });
     },
 
@@ -264,6 +266,7 @@ export const useMapStore = create<MapStore>()(
         if (!layer) return;
         const index = y * state.map!.width + x;
         layer.tiles[index] = Math.max(0, Math.min(65535, tileId));
+        state.map!.version++; // Trigger re-render
       });
     },
 
