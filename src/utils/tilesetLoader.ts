@@ -2,9 +2,30 @@
  * Tileset loading utility.
  * Loads PNG images as PixiJS textures and extracts individual tile textures.
  */
-import { Assets, Texture, Rectangle } from 'pixi.js';
+import { Texture, Rectangle } from 'pixi.js';
 import type { Tileset, TilesetConfig, TileDefinition } from '../types';
 import { detectTileSize } from './tileAutoDetect';
+
+/**
+ * Load an image and create a PixiJS texture from it
+ */
+async function loadImageAsTexture(url: string): Promise<Texture> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const texture = Texture.from(img);
+      resolve(texture);
+    };
+    
+    img.onerror = () => {
+      reject(new Error(`Failed to load image: ${url}`));
+    };
+    
+    img.src = url;
+  });
+}
 
 /**
  * Extract individual tile textures from a base texture
@@ -91,8 +112,8 @@ export async function loadTileset(
       };
     }
 
-    // Load as PixiJS texture using Assets API
-    const baseTexture = await Assets.load<Texture>(imageUrl);
+    // Load image and create PixiJS texture
+    const baseTexture = await loadImageAsTexture(imageUrl);
 
     // Calculate grid dimensions
     const { columns, rows } = calculateGridDimensions(
