@@ -4,8 +4,9 @@
  */
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { TileMap, Layer } from '../types';
+import type { TileMap, Layer, MapMetadata, ResizeAnchor } from '../types';
 import { MAP_CONSTRAINTS } from '../types';
+import { useHistoryStore } from './historyStore';
 
 /** Clamp a value between min and max */
 const clamp = (value: number, min: number, max: number): number =>
@@ -23,6 +24,43 @@ function createLayer(name: string, width: number, height: number): Layer {
   };
 }
 
+/** Calculate offset for resize based on anchor point */
+export function calculateResizeOffset(
+  oldWidth: number,
+  oldHeight: number,
+  newWidth: number,
+  newHeight: number,
+  anchor: ResizeAnchor
+): { x: number; y: number } {
+  const dw = newWidth - oldWidth;
+  const dh = newHeight - oldHeight;
+
+  let x = 0;
+  let y = 0;
+
+  // Horizontal alignment
+  if (anchor.includes('left')) {
+    x = 0;
+  } else if (anchor.includes('right')) {
+    x = dw;
+  } else {
+    // center (or just 'top'/'bottom')
+    x = Math.floor(dw / 2);
+  }
+
+  // Vertical alignment
+  if (anchor.includes('top')) {
+    y = 0;
+  } else if (anchor.includes('bottom')) {
+    y = dh;
+  } else {
+    // center (or just 'left'/'right')
+    y = Math.floor(dh / 2);
+  }
+
+  return { x, y };
+}
+
 /** Map store state */
 interface MapState {
   map: TileMap | null;
@@ -33,6 +71,14 @@ interface MapActions {
   // Map operations
   createMap: (width: number, height: number, tileSize?: number) => void;
   clearMap: () => void;
+
+  // Resize
+  resizeMap: (newWidth: number, newHeight: number, anchor: ResizeAnchor) => void;
+
+  // Metadata
+  setMapMetadata: (metadata: Partial<MapMetadata>) => void;
+  setCustomProperty: (key: string, value: string | number | boolean) => void;
+  removeCustomProperty: (key: string) => void;
 
   // Tile operations
   setTile: (x: number, y: number, tileId: number, layerId?: string) => void;
@@ -73,6 +119,7 @@ export const useMapStore = create<MapStore>()(
       const clampedHeight = clamp(height, MAP_CONSTRAINTS.MIN_SIZE, MAP_CONSTRAINTS.MAX_SIZE);
 
       const defaultLayer = createLayer('Layer 1', clampedWidth, clampedHeight);
+      const now = Date.now();
 
       set((state) => {
         state.map = {
@@ -81,6 +128,13 @@ export const useMapStore = create<MapStore>()(
           tileSize,
           layers: [defaultLayer],
           activeLayerId: defaultLayer.id,
+          metadata: {
+            name: 'Untitled Map',
+            description: '',
+            createdAt: now,
+            modifiedAt: now,
+            customProperties: {},
+          },
         };
       });
     },
@@ -90,6 +144,97 @@ export const useMapStore = create<MapStore>()(
         state.map = null;
       });
     },
+
+    resizeMap: (newWidth: number, newHeight: number, anchor: ResizeAnchor) => {
+      const { map } = get();
+      if (!map) return;
+
+      const clampedWidth = clamp(newWidth, MAP_CONSTRAINTS.MIN_SIZE, MAP_CONSTRAINTS.MAX_SIZE);
+      const clampedHeight = clamp(newHeight, MAP_CONSTRAINTS.MIN_SIZE, MAP_CONSTRAINTS.MAX_SIZE);
+
+      // Save snapshot for undo before resizing
+      const snapshot = {
+        width: map.width,
+        height: map.height,
+        layers: map.layers.map((l) => ({
+          id: l.id,
+          tiles: new Uint16Array(l.tiles), // copy
+        })),
+      };
+
+      // Calculate offset based on anchor
+      const offset = calculateResizeOffset(
+        map.width,
+        map.height,
+        clampedWidth,
+        clampedHeight,
+        anchor
+      );
+
+      set((state) => {
+        if (!state.map) return;
+
+        // Resize each layer
+        for (const layer of state.map.layers) {
+          const newTiles = new Uint16Array(clampedWidth * clampedHeight);
+
+          // Copy tiles from old position to new position
+          for (let y = 0; y < clampedHeight; y++) {
+            for (let x = 0; x < clampedWidth; x++) {
+              // Calculate source position
+              const srcX = x - offset.x;
+              const srcY = y - offset.y;
+
+              // Check if source is in bounds of old map
+              if (
+                srcX >= 0 &&
+                srcX < state.map.width &&
+                srcY >= 0 &&
+                srcY < state.map.height
+              ) {
+                const srcIndex = srcY * state.map.width + srcX;
+                const dstIndex = y * clampedWidth + x;
+                newTiles[dstIndex] = layer.tiles[srcIndex];
+              }
+            }
+          }
+
+          layer.tiles = newTiles;
+        }
+
+        state.map.width = clampedWidth;
+        state.map.height = clampedHeight;
+        state.map.metadata.modifiedAt = Date.now();
+      });
+
+      // Push to history for undo support
+      useHistoryStore.getState().pushAction({
+        type: 'resize',
+        changes: [],
+        snapshot,
+      });
+    },
+
+    setMapMetadata: (metadata: Partial<MapMetadata>) =>
+      set((state) => {
+        if (!state.map) return;
+        state.map.metadata = { ...state.map.metadata, ...metadata };
+        state.map.metadata.modifiedAt = Date.now();
+      }),
+
+    setCustomProperty: (key: string, value: string | number | boolean) =>
+      set((state) => {
+        if (!state.map) return;
+        state.map.metadata.customProperties[key] = value;
+        state.map.metadata.modifiedAt = Date.now();
+      }),
+
+    removeCustomProperty: (key: string) =>
+      set((state) => {
+        if (!state.map) return;
+        delete state.map.metadata.customProperties[key];
+        state.map.metadata.modifiedAt = Date.now();
+      }),
 
     setTile: (x: number, y: number, tileId: number, layerId?: string) => {
       const { map } = get();
