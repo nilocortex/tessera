@@ -8,6 +8,7 @@ import { Viewport } from 'pixi-viewport';
 import { useViewportStore, useMapStore, useToolStore } from '../stores';
 import { useToolHandler } from '../hooks/useToolHandler';
 import { TileMapRenderer } from './TileMapRenderer';
+import { SelectionOverlay } from './SelectionOverlay';
 import type { Position } from '../types';
 
 // Import pixi extensions BEFORE using @pixi/react components
@@ -166,7 +167,12 @@ function ViewportContainer({ width, height }: ViewportContainerProps) {
     };
   }, [app, handlePointerDown, handlePointerMove, handlePointerUp]);
 
-  return <TileMapRenderer viewport={viewportRef.current} />;
+  return (
+    <>
+      <TileMapRenderer viewport={viewportRef.current} />
+      <SelectionOverlay viewport={viewportRef.current} />
+    </>
+  );
 }
 
 interface CanvasProps {

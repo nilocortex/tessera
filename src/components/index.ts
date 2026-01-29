@@ -5,3 +5,4 @@ export { NewMapDialog } from './NewMapDialog';
 export { TilePalette } from './TilePalette';
 export { TilesetTabs } from './TilesetTabs';
 export { TilesetImportModal } from './TilesetImportModal';
+export { SelectionOverlay } from './SelectionOverlay';
