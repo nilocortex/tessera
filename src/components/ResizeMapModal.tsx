@@ -2,7 +2,7 @@
  * Modal dialog for resizing the map with anchor point selection.
  * Preserves existing tiles based on the chosen anchor position.
  */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMapStore, calculateResizeOffset } from '../stores/mapStore';
 import type { ResizeAnchor } from '../types';
 import { MAP_CONSTRAINTS } from '../types';
@@ -24,23 +24,31 @@ const ANCHORS: { id: ResizeAnchor; label: string; row: number; col: number }[] =
   { id: 'bottom-right', label: '↘', row: 2, col: 2 },
 ];
 
+/**
+ * Wrapper that only renders content when open, ensuring fresh state on each open.
+ */
 export function ResizeMapModal({ isOpen, onClose }: ResizeMapModalProps) {
+  const map = useMapStore((state) => state.map);
+  
+  if (!isOpen || !map) return null;
+  
+  // Key forces remount when modal reopens with different map dimensions
+  return (
+    <ResizeMapModalContent 
+      key={`${map.width}-${map.height}`}
+      onClose={onClose} 
+    />
+  );
+}
+
+function ResizeMapModalContent({ onClose }: { onClose: () => void }) {
   const { map, resizeMap } = useMapStore();
 
   const [width, setWidth] = useState(map?.width ?? 32);
   const [height, setHeight] = useState(map?.height ?? 32);
   const [anchor, setAnchor] = useState<ResizeAnchor>('center');
 
-  // Reset values when modal opens
-  useEffect(() => {
-    if (isOpen && map) {
-      setWidth(map.width);
-      setHeight(map.height);
-      setAnchor('center');
-    }
-  }, [isOpen, map]);
-
-  if (!isOpen || !map) return null;
+  if (!map) return null;
 
   const handleResize = () => {
     resizeMap(width, height, anchor);

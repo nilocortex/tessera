@@ -2,7 +2,7 @@
  * Modal dialog for editing map metadata and custom properties.
  * Allows setting name, description, author, version, and custom key-value pairs.
  */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMapStore } from '../stores/mapStore';
 
 interface MapPropertiesModalProps {
@@ -10,29 +10,34 @@ interface MapPropertiesModalProps {
   onClose: () => void;
 }
 
+/**
+ * Wrapper that only renders content when open, ensuring fresh state on each open.
+ */
 export function MapPropertiesModal({ isOpen, onClose }: MapPropertiesModalProps) {
+  const map = useMapStore((state) => state.map);
+  
+  if (!isOpen || !map) return null;
+  
+  // Key forces remount when metadata changes, ensuring fresh form values
+  return (
+    <MapPropertiesModalContent 
+      key={map.metadata.modifiedAt}
+      onClose={onClose} 
+    />
+  );
+}
+
+function MapPropertiesModalContent({ onClose }: { onClose: () => void }) {
   const { map, setMapMetadata, setCustomProperty, removeCustomProperty } = useMapStore();
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [author, setAuthor] = useState('');
-  const [version, setVersion] = useState('');
+  const [name, setName] = useState(map?.metadata.name ?? '');
+  const [description, setDescription] = useState(map?.metadata.description ?? '');
+  const [author, setAuthor] = useState(map?.metadata.author ?? '');
+  const [version, setVersion] = useState(map?.metadata.version ?? '');
   const [newPropKey, setNewPropKey] = useState('');
   const [newPropValue, setNewPropValue] = useState('');
 
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen && map) {
-      setName(map.metadata.name);
-      setDescription(map.metadata.description);
-      setAuthor(map.metadata.author ?? '');
-      setVersion(map.metadata.version ?? '');
-      setNewPropKey('');
-      setNewPropValue('');
-    }
-  }, [isOpen, map]);
-
-  if (!isOpen || !map) return null;
+  if (!map) return null;
 
   const handleSave = () => {
     setMapMetadata({
