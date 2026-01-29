@@ -1,11 +1,15 @@
 import { useEffect, useCallback } from 'react';
 import { useMapStore, useViewportStore } from './stores';
+import { useEditorKeyboard } from './hooks';
 import { Canvas, Toolbar, TilePalette } from './components';
 import './App.css';
 
 function App() {
   const { map, createMap } = useMapStore();
   const { toggleGrid } = useViewportStore();
+
+  // Register undo/redo keyboard shortcuts (Ctrl+Z, Ctrl+Y)
+  useEditorKeyboard();
 
   // Initialize a default map on mount
   useEffect(() => {
