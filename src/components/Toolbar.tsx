@@ -17,6 +17,8 @@ import {
 } from '../stores';
 import { useHistory, useEditorKeyboard } from '../hooks';
 import { NewMapDialog } from './NewMapDialog';
+import { ResizeMapModal } from './ResizeMapModal';
+import { MapPropertiesModal } from './MapPropertiesModal';
 import type { ToolType } from '../types';
 
 interface ToolButton {
@@ -36,7 +38,10 @@ const TOOLS: ToolButton[] = [
 
 export function Toolbar() {
   const [showNewMapDialog, setShowNewMapDialog] = useState(false);
+  const [showResizeModal, setShowResizeModal] = useState(false);
+  const [showPropertiesModal, setShowPropertiesModal] = useState(false);
   const { zoom, showGrid, toggleGrid } = useViewportStore();
+  const map = useMapStore((state) => state.map);
   const { activeTool, brushSettings, setActiveTool, setBrushSize } = useToolStore();
   const canUndo = useHistoryStore(selectCanUndo);
   const canRedo = useHistoryStore(selectCanRedo);
@@ -133,6 +138,22 @@ export function Toolbar() {
           title="Create new map"
         >
           📄 New
+        </button>
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowResizeModal(true)}
+          disabled={!map}
+          title="Resize map"
+        >
+          📐 Resize
+        </button>
+        <button
+          className="toolbar-btn"
+          onClick={() => setShowPropertiesModal(true)}
+          disabled={!map}
+          title="Map properties"
+        >
+          ⚙️ Properties
         </button>
 
         <div className="toolbar-divider" />
@@ -231,6 +252,14 @@ export function Toolbar() {
       </div>
 
       {showNewMapDialog && <NewMapDialog onClose={() => setShowNewMapDialog(false)} />}
+      <ResizeMapModal
+        isOpen={showResizeModal}
+        onClose={() => setShowResizeModal(false)}
+      />
+      <MapPropertiesModal
+        isOpen={showPropertiesModal}
+        onClose={() => setShowPropertiesModal(false)}
+      />
     </>
   );
 }
