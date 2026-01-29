@@ -1,0 +1,280 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #1a1a2e;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ========================================
+   Toolbar Styles (Glassmorphism Dark)
+   ======================================== */
+.toolbar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+
+  background: rgba(22, 33, 62, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(102, 102, 170, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  
+  color: #e0e0e0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toolbar-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(102, 102, 170, 0.5);
+}
+
+.toolbar-btn:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.toolbar-btn.active {
+  background: rgba(102, 102, 170, 0.3);
+  border-color: rgba(102, 102, 170, 0.6);
+  color: #c0c0ff;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 4px;
+}
+
+.toolbar-zoom {
+  padding: 8px 12px;
+  color: #aaa;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 80px;
+  text-align: center;
+}
+
+/* ========================================
+   Dialog / Modal Styles
+   ======================================== */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  
+  background: #16213e;
+  border: 1px solid rgba(102, 102, 170, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.dialog-title {
+  margin: 0 0 20px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e94560;
+}
+
+.dialog-section {
+  margin-bottom: 20px;
+}
+
+.dialog-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+}
+
+/* Preset Buttons */
+.preset-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.preset-btn {
+  flex: 1;
+  padding: 10px 12px;
+  
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  
+  color: #ccc;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.preset-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(102, 102, 170, 0.4);
+}
+
+.preset-btn.active {
+  background: rgba(233, 69, 96, 0.2);
+  border-color: #e94560;
+  color: #e94560;
+}
+
+/* Size Inputs */
+.size-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.input-group {
+  flex: 1;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 10px 12px;
+  
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  
+  color: #fff;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #e94560;
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.2);
+}
+
+.input-group input::-webkit-inner-spin-button,
+.input-group input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.size-separator {
+  padding-top: 20px;
+  color: #666;
+  font-size: 1.25rem;
+}
+
+.tile-count {
+  margin: 12px 0 0 0;
+  font-size: 0.875rem;
+  color: #888;
+}
+
+/* Dialog Actions */
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dialog-btn {
+  flex: 1;
+  padding: 12px 20px;
+  
+  border: none;
+  border-radius: 8px;
+  
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dialog-btn.cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+}
+
+.dialog-btn.cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ccc;
+}
+
+.dialog-btn.create {
+  background: #e94560;
+  color: #fff;
+}
+
+.dialog-btn.create:hover {
+  background: #d63050;
+}
+
+.dialog-btn:active {
+  transform: scale(0.98);
+}

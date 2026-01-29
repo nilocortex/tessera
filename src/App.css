@@ -1,0 +1,45 @@
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #1a1a2e;
+  overflow: hidden;
+}
+
+.app-main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.canvas-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(102, 102, 170, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.canvas-container canvas {
+  display: block;
+}
+
+.canvas-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 512px;
+  height: 512px;
+  background: #0f0f1a;
+  border: 2px dashed #0f3460;
+  border-radius: 8px;
+}
+
+.canvas-placeholder p {
+  color: #666;
+  font-size: 1rem;
+}
