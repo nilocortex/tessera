@@ -1,9 +1,20 @@
 /**
- * Toolbar component with tool buttons, undo/redo, and view controls.
+ * Toolbar component with tool buttons, undo/redo, clipboard, and view controls.
  * Positioned at top center of the viewport.
  */
-import { useState } from 'react';
-import { useViewportStore, useToolStore, useHistoryStore, selectCanUndo, selectCanRedo } from '../stores';
+import { useState, useCallback } from 'react';
+import {
+  useViewportStore,
+  useToolStore,
+  useHistoryStore,
+  useSelectionStore,
+  useMapStore,
+  selectCanUndo,
+  selectCanRedo,
+  selectHasSelection,
+  selectHasClipboard,
+  selectIsFloating,
+} from '../stores';
 import { useHistory, useEditorKeyboard } from '../hooks';
 import { NewMapDialog } from './NewMapDialog';
 import type { ToolType } from '../types';
@@ -16,6 +27,7 @@ interface ToolButton {
 }
 
 const TOOLS: ToolButton[] = [
+  { id: 'select', icon: '⬚', label: 'Select', shortcut: 'M' },
   { id: 'brush', icon: '🖌️', label: 'Brush', shortcut: 'B' },
   { id: 'fill', icon: '🪣', label: 'Fill', shortcut: 'G' },
   { id: 'eraser', icon: '🧹', label: 'Eraser', shortcut: 'E' },
@@ -30,10 +42,86 @@ export function Toolbar() {
   const canRedo = useHistoryStore(selectCanRedo);
   const { performUndo, performRedo } = useHistory();
 
+  // Selection store
+  const hasSelection = useSelectionStore(selectHasSelection);
+  const hasClipboard = useSelectionStore(selectHasClipboard);
+  const isFloating = useSelectionStore(selectIsFloating);
+  const { copy, cut, paste, commitSelection, selection } = useSelectionStore();
+  const { setTileRaw, getTile } = useMapStore();
+  const { pushAction } = useHistoryStore();
+
   // Register keyboard shortcuts
   useEditorKeyboard();
 
   const zoomPercent = Math.round(zoom * 100);
+
+  /**
+   * Handle cut with undo support
+   */
+  const handleCut = useCallback(() => {
+    const { selection: sel } = useSelectionStore.getState();
+    if (!sel || sel.floating) return;
+
+    const { bounds, layerId } = sel;
+    const changes = [];
+    for (let dy = 0; dy < bounds.height; dy++) {
+      for (let dx = 0; dx < bounds.width; dx++) {
+        const x = bounds.x + dx;
+        const y = bounds.y + dy;
+        const oldTileId = getTile(x, y);
+        if (oldTileId !== 0) {
+          changes.push({ x, y, layerId, oldTileId, newTileId: 0 });
+        }
+      }
+    }
+
+    cut(setTileRaw);
+
+    if (changes.length > 0) {
+      pushAction({ type: 'cut', changes });
+    }
+  }, [cut, setTileRaw, getTile, pushAction]);
+
+  /**
+   * Handle paste with floating selection support
+   */
+  const handlePaste = useCallback(() => {
+    if (!useSelectionStore.getState().hasClipboard()) return;
+
+    // Commit any existing floating selection first
+    const { selection: sel } = useSelectionStore.getState();
+    if (sel?.floating) {
+      const { bounds, tiles, layerId, offsetX, offsetY } = sel;
+      const targetX = bounds.x + offsetX;
+      const targetY = bounds.y + offsetY;
+      const changes = [];
+
+      for (let dy = 0; dy < bounds.height; dy++) {
+        for (let dx = 0; dx < bounds.width; dx++) {
+          const newTileId = tiles[dy * bounds.width + dx];
+          if (newTileId !== 0) {
+            const x = targetX + dx;
+            const y = targetY + dy;
+            const oldTileId = getTile(x, y);
+            if (oldTileId !== newTileId) {
+              changes.push({ x, y, layerId, oldTileId, newTileId });
+            }
+          }
+        }
+      }
+
+      commitSelection(setTileRaw);
+
+      if (changes.length > 0) {
+        pushAction({ type: 'paste', changes });
+      }
+    }
+
+    // Paste at current selection position or (0,0)
+    const pasteX = sel?.bounds.x ?? 0;
+    const pasteY = sel?.bounds.y ?? 0;
+    paste(pasteX, pasteY);
+  }, [paste, commitSelection, setTileRaw, getTile, pushAction]);
 
   return (
     <>
@@ -65,6 +153,34 @@ export function Toolbar() {
           title="Redo (Ctrl+Y)"
         >
           ↪️
+        </button>
+
+        <div className="toolbar-divider" />
+
+        {/* Clipboard operations */}
+        <button
+          className="toolbar-btn"
+          onClick={copy}
+          disabled={!hasSelection}
+          title="Copy (Ctrl+C)"
+        >
+          📋
+        </button>
+        <button
+          className="toolbar-btn"
+          onClick={handleCut}
+          disabled={!hasSelection || isFloating}
+          title="Cut (Ctrl+X)"
+        >
+          ✂️
+        </button>
+        <button
+          className="toolbar-btn"
+          onClick={handlePaste}
+          disabled={!hasClipboard}
+          title="Paste (Ctrl+V)"
+        >
+          📥
         </button>
 
         <div className="toolbar-divider" />
