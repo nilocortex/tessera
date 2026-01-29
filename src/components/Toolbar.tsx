@@ -46,7 +46,7 @@ export function Toolbar() {
   const hasSelection = useSelectionStore(selectHasSelection);
   const hasClipboard = useSelectionStore(selectHasClipboard);
   const isFloating = useSelectionStore(selectIsFloating);
-  const { copy, cut, paste, commitSelection, selection } = useSelectionStore();
+  const { copy, cut, paste, commitSelection } = useSelectionStore();
   const { setTileRaw, getTile } = useMapStore();
   const { pushAction } = useHistoryStore();
 

@@ -3,7 +3,7 @@
  */
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { Selection, Bounds, Clipboard, SelectionState } from '../types';
+import type { Selection, Bounds, SelectionState } from '../types';
 
 interface SelectionActions {
   // Selection creation
