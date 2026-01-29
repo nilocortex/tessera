@@ -19,6 +19,24 @@ export interface Layer {
   tiles: Uint16Array;
 }
 
+/** Metadata about a map */
+export interface MapMetadata {
+  /** Display name of the map */
+  name: string;
+  /** Optional description */
+  description: string;
+  /** Optional author name */
+  author?: string;
+  /** Optional version string */
+  version?: string;
+  /** Creation timestamp */
+  createdAt: number;
+  /** Last modified timestamp */
+  modifiedAt: number;
+  /** Custom key-value properties */
+  customProperties: Record<string, string | number | boolean>;
+}
+
 /** Represents a 2D tile map with multiple layers */
 export interface TileMap {
   /** Map width in tiles (8-256) */
@@ -31,7 +49,21 @@ export interface TileMap {
   layers: Layer[];
   /** Currently active layer ID */
   activeLayerId: string;
+  /** Map metadata */
+  metadata: MapMetadata;
 }
+
+/** Anchor positions for map resize operations */
+export type ResizeAnchor =
+  | 'top-left'
+  | 'top'
+  | 'top-right'
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'bottom-left'
+  | 'bottom'
+  | 'bottom-right';
 
 /** Configuration for creating a new map */
 export interface MapConfig {
