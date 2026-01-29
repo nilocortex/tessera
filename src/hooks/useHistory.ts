@@ -4,8 +4,8 @@
  */
 import { useCallback } from 'react';
 import { useHistoryStore } from '../stores/historyStore';
-import { useMapStore, calculateResizeOffset } from '../stores/mapStore';
-import type { HistoryAction, MapSnapshot, ResizeAnchor } from '../types';
+import { useMapStore } from '../stores/mapStore';
+import type { HistoryAction, MapSnapshot } from '../types';
 
 export function useHistory() {
   const { undo, redo, canUndo, canRedo, recordChange, commitPending, pushAction } =
