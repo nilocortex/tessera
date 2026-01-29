@@ -6,3 +6,4 @@ export {
   selectSelectedTileTexture,
   selectTilesetCount,
 } from './tilesetStore';
+export { useHistoryStore, selectCanUndo, selectCanRedo } from './historyStore';
