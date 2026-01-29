@@ -20,7 +20,7 @@ function scanLineForSpans(
   getTile: (x: number, y: number) => number,
   filledSet: Set<string>,
   stack: FillSpan[],
-  mapWidth: number,
+  _mapWidth: number,
   mapHeight: number
 ): void {
   if (y < 0 || y >= mapHeight) return;
