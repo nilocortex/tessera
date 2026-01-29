@@ -68,7 +68,7 @@ export function Toolbar() {
       for (let dx = 0; dx < bounds.width; dx++) {
         const x = bounds.x + dx;
         const y = bounds.y + dy;
-        const oldTileId = getTile(x, y);
+        const oldTileId = getTile(x, y, layerId);
         if (oldTileId !== 0) {
           changes.push({ x, y, layerId, oldTileId, newTileId: 0 });
         }
@@ -102,7 +102,7 @@ export function Toolbar() {
           if (newTileId !== 0) {
             const x = targetX + dx;
             const y = targetY + dy;
-            const oldTileId = getTile(x, y);
+            const oldTileId = getTile(x, y, layerId);
             if (oldTileId !== newTileId) {
               changes.push({ x, y, layerId, oldTileId, newTileId });
             }
