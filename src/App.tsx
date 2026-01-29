@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import { useMapStore, useViewportStore } from './stores';
 import { useEditorKeyboard } from './hooks';
-import { Canvas, Toolbar, TilePalette } from './components';
+import { Canvas, Toolbar, TilePalette, LayerPanel } from './components';
 import './App.css';
 
 function App() {
@@ -51,6 +51,7 @@ function App() {
       <div className="app-content">
         <aside className="app-sidebar">
           <TilePalette />
+          <LayerPanel />
         </aside>
         <main className="app-main">
           <Canvas />
