@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { useMapStore, useViewportStore } from './stores';
-import { Canvas, Toolbar } from './components';
+import { Canvas, Toolbar, TilePalette } from './components';
 import './App.css';
 
 function App() {
@@ -44,9 +44,14 @@ function App() {
   return (
     <div className="app">
       <Toolbar />
-      <main className="app-main">
-        <Canvas />
-      </main>
+      <div className="app-content">
+        <aside className="app-sidebar">
+          <TilePalette />
+        </aside>
+        <main className="app-main">
+          <Canvas />
+        </main>
+      </div>
     </div>
   );
 }

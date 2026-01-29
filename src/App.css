@@ -4,14 +4,32 @@
   height: 100vh;
   background: #1a1a2e;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.app-sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: #16213e;
+  border-right: 1px solid rgba(102, 102, 170, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .app-main {
-  width: 100%;
-  height: 100%;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .canvas-container {
@@ -42,4 +60,360 @@
 .canvas-placeholder p {
   color: #666;
   font-size: 1rem;
+}
+
+/* Tile Palette */
+.tile-palette {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tile-palette.empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.palette-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid rgba(102, 102, 170, 0.2);
+}
+
+.palette-title {
+  font-weight: 600;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.import-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: #0f3460;
+  color: #e2e8f0;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.import-btn:hover {
+  background: #1a4a8a;
+}
+
+/* Tileset Tabs */
+.tileset-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.tileset-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(102, 102, 170, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.tileset-tab:hover {
+  background: rgba(102, 102, 170, 0.2);
+}
+
+.tileset-tab.active {
+  background: #0f3460;
+}
+
+.tab-name {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-info {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.tab-close {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tab-close:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+/* Tile Grid */
+.tile-grid-container {
+  flex: 1;
+  overflow: auto;
+  padding: 8px;
+}
+
+.tile-grid {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.tile-thumb {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 2px;
+  transition: border-color 0.15s;
+  image-rendering: pixelated;
+}
+
+.tile-thumb:hover {
+  border-color: rgba(102, 102, 170, 0.5);
+}
+
+.tile-thumb.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.5);
+}
+
+/* Palette Info */
+.palette-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(102, 102, 170, 0.1);
+}
+
+/* Import Prompt */
+.tileset-import-prompt {
+  text-align: center;
+  padding: 24px;
+}
+
+.tileset-import-prompt p {
+  color: #94a3b8;
+  margin-bottom: 12px;
+}
+
+.tileset-import-prompt button {
+  padding: 10px 20px;
+  background: #0f3460;
+  color: #e2e8f0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.tileset-import-prompt button:hover {
+  background: #1a4a8a;
+}
+
+/* Import Modal */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.modal h2 {
+  margin: 0 0 16px 0;
+  color: #e2e8f0;
+  font-size: 1.25rem;
+}
+
+.import-modal {
+  width: 600px;
+}
+
+.file-name {
+  color: #94a3b8;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.import-content {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.preview-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  min-height: 200px;
+  padding: 16px;
+}
+
+.preview-canvas {
+  max-width: 100%;
+  image-rendering: pixelated;
+  border-radius: 4px;
+}
+
+.loading {
+  color: #94a3b8;
+}
+
+.config-section {
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detection-info {
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.config-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.config-grid input {
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(102, 102, 170, 0.2);
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.config-grid input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.quick-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.quick-sizes span {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  width: 100%;
+}
+
+.quick-size-btn {
+  padding: 4px 8px;
+  background: rgba(102, 102, 170, 0.2);
+  border: none;
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.quick-size-btn:hover {
+  background: rgba(102, 102, 170, 0.4);
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(102, 102, 170, 0.2);
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-actions button:not(.primary) {
+  background: transparent;
+  border: 1px solid rgba(102, 102, 170, 0.3);
+  color: #e2e8f0;
+}
+
+.modal-actions button:not(.primary):hover {
+  background: rgba(102, 102, 170, 0.1);
+}
+
+.modal-actions button.primary {
+  background: #3b82f6;
+  border: none;
+  color: white;
+}
+
+.modal-actions button.primary:hover {
+  background: #2563eb;
+}
+
+.modal-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
