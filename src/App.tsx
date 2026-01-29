@@ -18,6 +18,12 @@ function App() {
     }
   }, [map, createMap]);
 
+  // Update window title with map name
+  useEffect(() => {
+    const name = map?.metadata?.name ?? 'Tessera';
+    document.title = name === 'Tessera' ? 'Tessera' : `${name} - Tessera`;
+  }, [map?.metadata?.name]);
+
   // Keyboard shortcuts
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
