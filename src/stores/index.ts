@@ -6,4 +6,5 @@ export {
   selectSelectedTileTexture,
   selectTilesetCount,
 } from './tilesetStore';
+export { useToolStore, selectActiveTool, selectBrushSettings } from './toolStore';
 export { useHistoryStore, selectCanUndo, selectCanRedo } from './historyStore';
